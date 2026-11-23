@@ -461,6 +461,95 @@
       }
       .formula p { margin: 4px 0; }
 
+      /* ---------- tabs ---------- */
+      .tabs {
+        display: flex;
+        gap: 6px;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 5px;
+        margin-bottom: 18px;
+      }
+      .tab-btn {
+        flex: 1 1 0;
+        font: inherit;
+        font-weight: 900;
+        font-size: .98rem;
+        color: var(--ink-2);
+        background: transparent;
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 8px;
+        cursor: pointer;
+        line-height: 1.35;
+      }
+      .tab-btn small { display: block; font-weight: 500; font-size: .72rem; }
+      .tab-btn[aria-selected="true"] {
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: var(--shadow);
+      }
+      .tab-btn[aria-selected="true"] small { color: var(--accent-strong); font-weight: 700; }
+      [role="tabpanel"][hidden] { display: none; }
+
+      /* ---------- daily (walk) ---------- */
+      .rate-line {
+        margin-top: 14px;
+        background: var(--surface-2);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: .9rem;
+      }
+      .rate-line b { font-family: "IBM Plex Mono", monospace; color: var(--accent-strong); }
+      .walk-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+      .walk-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+      .walk-card.danger { border-color: #b23a1e; }
+      @media (prefers-color-scheme: dark) { .walk-card.danger { border-color: #ff9a7a; } }
+      .walk-when { font-weight: 900; font-size: 1.02rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .walk-tag {
+        font-size: .72rem; font-weight: 700;
+        background: var(--hit-bg); color: var(--hit-ink);
+        border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+      }
+      .walk-desc { margin: 4px 0 0; color: var(--ink-2); font-size: .85rem; }
+      .walk-min { display: flex; align-items: baseline; gap: 8px; margin: 10px 0 6px; }
+      .walk-min .big { font-family: "IBM Plex Mono", monospace; font-size: 3rem; font-weight: 700; line-height: 1; color: var(--accent-strong); }
+      .walk-min .walk-unit { font-weight: 900; font-size: 1.05rem; }
+      .walk-rows { margin: 0; border-top: 1px solid var(--line); }
+      .walk-rows > div {
+        display: flex; align-items: baseline; gap: 8px;
+        padding: 8px 0; border-bottom: 1px solid var(--line); font-size: .92rem;
+      }
+      .walk-rows dt { font-weight: 700; }
+      .walk-rows dd { margin: 0 0 0 auto; font-family: "IBM Plex Mono", monospace; font-weight: 700; font-size: 1.02rem; white-space: nowrap; }
+      .walk-warn {
+        margin: 12px 0 0; border-radius: 8px; padding: 10px 12px;
+        font-size: .88rem; font-weight: 700; line-height: 1.55;
+        background: var(--surface-2); color: var(--ink);
+      }
+      .walk-warn.hot { background: #fbe9e2; color: #8c2b12; }
+      @media (prefers-color-scheme: dark) { .walk-warn.hot { background: #4a2317; color: #ffb59d; } }
+      .walk-warn.safe { background: var(--hit-bg); color: var(--hit-ink); }
+      .cycle {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 6px 20px;
+      }
+      .cycle-row { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: .92rem; }
+      .cycle-row:last-child { border-bottom: 0; }
+      .cycle-row .c-k { font-weight: 900; display: block; margin-bottom: 2px; }
+      .cycle-row .c-v { color: var(--ink-2); }
+      .cycle-row .c-v b { color: var(--ink); font-family: "IBM Plex Mono", monospace; }
+
       @media (max-width: 480px) {
         main { padding: 24px 12px 48px; }
         .panel { padding: 16px 14px; }
@@ -469,6 +558,9 @@
         .detail-toggle .chev { margin-left: 4px; }
         .use-row { padding: 12px; }
         .reach { padding: 6px 14px; }
+        .cycle { padding: 6px 14px; }
+        .walk-card { padding: 16px 14px; }
+        .walk-min .big { font-size: 2.5rem; }
         .reach-row { display: block; padding: 12px 0; }
         .reach-row .who { display: block; margin-bottom: 2px; }
         .reach-row .what { display: block; margin-left: 0; text-align: left; }
@@ -498,7 +590,7 @@
   <body>
     <main>
       <h1>エナジー消費計算</h1>
-      <p class="lede"><span class="game">The Life Bomb</span> のイベント用。エンデュランスを入れると、ハイブ1〜4個を同時に回したときの消費エナジーが分かります。</p>
+      <p class="lede"><span class="game">The Life Bomb</span> 用。ふだんの100%消化に必要な「歩く分数」を出すのが本体で、イベント用の早見表は別タブに分けてあります。エンデュランス入力は両タブ共通です。</p>
 
       <section class="panel" aria-label="エンデュランス入力">
         <label class="field-label" for="endurance">エンデュランス<span class="unit-note">小数第2位まで</span></label>
@@ -513,7 +605,7 @@
           <div class="detail-body" id="detail-body">
             <label class="use-row" for="use-detail">
               <input type="checkbox" id="use-detail" />
-              <span class="use-text">詳細入力の計算結果を使う<small>チェックすると、下の内訳で出したエンデュランスで上の表を計算します（上の入力欄はロックされます）</small></span>
+              <span class="use-text">詳細入力の計算結果を使う<small>チェックすると、下の内訳で出したエンデュランスを両タブの計算に使います（上の入力欄はロックされます）</small></span>
             </label>
 
             <div class="detail-grid">
@@ -577,6 +669,63 @@
         </div>
       </section>
 
+      <div class="tabs" role="tablist" aria-label="ツールの切り替え">
+        <button type="button" class="tab-btn" role="tab" id="tab-daily" aria-selected="true" aria-controls="panel-daily">通常<small>毎日の100%消化</small></button>
+        <button type="button" class="tab-btn" role="tab" id="tab-event" aria-selected="false" aria-controls="panel-event">イベント<small>期間中だけ使う早見表</small></button>
+      </div>
+
+      <div id="panel-daily" role="tabpanel" aria-labelledby="tab-daily">
+        <section class="panel" aria-label="最大エナジー入力">
+          <label class="field-label" for="max-energy">最大エナジー<span class="unit-note">全体分をそのまま入れてください（ハイブごとの内訳は不要です）</span></label>
+          <div class="input-row">
+            <div class="input-wrap">
+              <input id="max-energy" class="num" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="最大エナジーを入力" value="" autocomplete="off" />
+            </div>
+          </div>
+          <div class="rate-line">消化速度（エンデュランス ÷ 6）：1分で <b id="daily-rate">—</b> エナジー</div>
+        </section>
+
+        <div class="walk-grid">
+          <article class="walk-card" id="card-noon">
+            <div class="walk-when">朝・昼の回<span class="walk-tag">1/3までで止める</span></div>
+            <p class="walk-desc">1/3を超えて消化すると、次の回復でも100%に戻らず、夜の100%消化ができなくなります。超えない範囲で一番長い分数です。</p>
+            <div class="walk-min"><span class="big num" id="noon-min">—</span><span class="walk-unit">分 歩く</span></div>
+            <dl class="walk-rows">
+              <div><dt>1/3の量</dt><dd class="num" id="noon-target">—</dd></div>
+              <div><dt>この分数での消化</dt><dd class="num" id="noon-used">—</dd></div>
+              <div><dt>1/3までの残り</dt><dd class="num" id="noon-left">—</dd></div>
+            </dl>
+            <p class="walk-warn" id="noon-warn">最大エナジーを入れると、あと1分の扱いがここに出ます。</p>
+          </article>
+
+          <article class="walk-card" id="card-night">
+            <div class="walk-when">夜の回（18時〜21時）<span class="walk-tag">100%消化</span></div>
+            <p class="walk-desc">最大エナジーを全部消化しきるのに必要な分数です。1分刻みなので、消化しきれる一番短い分数に切り上げています。</p>
+            <div class="walk-min"><span class="big num" id="night-min">—</span><span class="walk-unit">分 歩く</span></div>
+            <dl class="walk-rows">
+              <div><dt>消化する量（100%）</dt><dd class="num" id="night-target">—</dd></div>
+              <div><dt>この分数での消化</dt><dd class="num" id="night-used">—</dd></div>
+              <div><dt>100%を超える分</dt><dd class="num" id="night-over">—</dd></div>
+            </dl>
+            <p class="walk-warn safe" id="night-note">100%使い切ると、そこから24時間は回復が4回（3時・9時・15時・21時、6時間ごと）になります。</p>
+          </article>
+        </div>
+
+        <h2>回復の循環</h2>
+        <div class="cycle">
+          <div class="cycle-row"><span class="c-k">通常の回復</span><span class="c-v"><b>1時・9時・17時</b> の3回、1回で最大値の1/3ずつ（8時間ごと）。</span></div>
+          <div class="cycle-row"><span class="c-k">100%消費したあと</span><span class="c-v">そこから24時間は <b>3時・9時・15時・21時</b> の4回、1回で1/3ずつ（6時間ごと）。この循環を切らさないために、昼は1/3を超えず、夜に100%消化します。</span></div>
+        </div>
+
+        <div class="formula">
+          <div class="box">消化速度 ＝ エンデュランス ÷ 6（エナジー／分）</div>
+          <p>・朝・昼の分数 ＝（最大エナジー ÷ 3）÷ 消化速度 を切り捨てた整数分。1/3を絶対に超えません。</p>
+          <p>・夜の分数 ＝ 最大エナジー ÷ 消化速度 を切り上げた整数分。100%に届く一番短い分数です。</p>
+          <p>・エナジー消費は1分ごとの刻みなので、分数はどちらも整数分で見ます。表示は小数第2位まで（第3位以下は切り捨て）。</p>
+        </div>
+      </div>
+
+      <div id="panel-event" role="tabpanel" aria-labelledby="tab-event" hidden>
       <h2>消費エナジー早見表</h2>
       <div class="table-wrap">
         <table aria-label="ハイブ数と分数ごとの消費エナジー">
@@ -617,6 +766,7 @@
         <p>・詳細入力の小計 ＝ メインビー基礎 − クリーナー（基礎の15%×匹数）＋ ベンチレーター（匹数×0.05）＋ エピック0.50。</p>
         <p>・上限（エピック込み）＝ 上限（エピック抜き）＋ エピック0.50。実効エンデュランスは、小計と上限（エピック込み）の小さい方です。</p>
       </div>
+      </div>
     </main>
 
     <script>
@@ -627,6 +777,35 @@
         var reachEl = document.getElementById('reach');
         var perMinEl = document.getElementById('stat-per-min');
         var perOneEl = document.getElementById('stat-per-one');
+
+        var maxEnergyInput = document.getElementById('max-energy');
+        var dailyRateEl = document.getElementById('daily-rate');
+        var noonCard = document.getElementById('card-noon');
+        var noonMinEl = document.getElementById('noon-min');
+        var noonTargetEl = document.getElementById('noon-target');
+        var noonUsedEl = document.getElementById('noon-used');
+        var noonLeftEl = document.getElementById('noon-left');
+        var noonWarnEl = document.getElementById('noon-warn');
+        var nightMinEl = document.getElementById('night-min');
+        var nightTargetEl = document.getElementById('night-target');
+        var nightUsedEl = document.getElementById('night-used');
+        var nightOverEl = document.getElementById('night-over');
+        var nightNoteEl = document.getElementById('night-note');
+
+        // タブ切り替え（通常が本体、イベントは別タブ）
+        var tabDaily = document.getElementById('tab-daily');
+        var tabEvent = document.getElementById('tab-event');
+        var panelDaily = document.getElementById('panel-daily');
+        var panelEvent = document.getElementById('panel-event');
+        function selectTab(which) {
+          var daily = which === 'daily';
+          tabDaily.setAttribute('aria-selected', daily ? 'true' : 'false');
+          tabEvent.setAttribute('aria-selected', daily ? 'false' : 'true');
+          panelDaily.hidden = !daily;
+          panelEvent.hidden = daily;
+        }
+        tabDaily.addEventListener('click', function () { selectTab('daily'); });
+        tabEvent.addEventListener('click', function () { selectTab('event'); });
 
         var useDetail = document.getElementById('use-detail');
         var dMain = document.getElementById('d-main');
@@ -764,6 +943,59 @@
           return v;
         }
 
+        // 通常タブ：消化速度はエンデュランス÷6のみ（ハイブ数は数えない）
+        function renderDaily(e) {
+          var max = parseFloat(maxEnergyInput.value);
+          if (e === null || isNaN(max) || max <= 0) {
+            dailyRateEl.textContent = e === null ? '—' : fmt(e / 6);
+            noonCard.className = 'walk-card';
+            noonMinEl.textContent = '—';
+            noonTargetEl.textContent = '—';
+            noonUsedEl.textContent = '—';
+            noonLeftEl.textContent = '—';
+            noonWarnEl.className = 'walk-warn';
+            noonWarnEl.textContent = e === null
+              ? 'エンデュランスを入れると、歩く分数が出ます。'
+              : '最大エナジーを入れると、あと1分の扱いがここに出ます。';
+            nightMinEl.textContent = '—';
+            nightTargetEl.textContent = '—';
+            nightUsedEl.textContent = '—';
+            nightOverEl.textContent = '—';
+            return;
+          }
+          var rate = e / 6;
+          dailyRateEl.textContent = fmt(rate);
+
+          // 朝・昼：1/3を超えない最大の整数分（切り捨て）
+          var target = max / 3;
+          var noonMin = Math.floor(target / rate + 1e-9);
+          var noonUsed = rate * noonMin;
+          var noonLeft = target - noonUsed;
+          var nextUsed = rate * (noonMin + 1);
+          var nextOver = nextUsed - target;
+          noonMinEl.textContent = noonMin;
+          noonTargetEl.textContent = fmt(target);
+          noonUsedEl.textContent = fmt(noonUsed);
+          noonLeftEl.textContent = fmt(noonLeft);
+          if (noonMin <= 0) {
+            noonCard.className = 'walk-card danger';
+            noonWarnEl.className = 'walk-warn hot';
+            noonWarnEl.textContent = '注意：1分歩くだけで1/3を超えます（1分で ' + fmt(nextUsed) + ' 消化、1/3を ' + fmt(nextOver) + ' 超過）。この回は歩かないのが安全です。';
+          } else {
+            noonCard.className = 'walk-card';
+            noonWarnEl.className = 'walk-warn hot';
+            noonWarnEl.textContent = 'あと1分歩くとアウト：' + (noonMin + 1) + '分で ' + fmt(nextUsed) + ' 消化し、1/3を ' + fmt(nextOver) + ' 超えてしまいます。';
+          }
+
+          // 夜：100%に届く最短の整数分（切り上げ）
+          var nightMin = Math.ceil(max / rate - 1e-9);
+          var nightUsed = rate * nightMin;
+          nightMinEl.textContent = nightMin;
+          nightTargetEl.textContent = fmt(max);
+          nightUsedEl.textContent = fmt(nightUsed);
+          nightOverEl.textContent = fmt(nightUsed - max);
+        }
+
         function render() {
           var d = renderDetail();
           if (useDetail.checked) {
@@ -775,6 +1007,7 @@
             inputWrap.classList.remove('is-locked');
           }
           var e = parseEndurance();
+          renderDaily(e);
           var h, m;
 
           if (e === null) {
@@ -842,6 +1075,8 @@
 
         input.addEventListener('input', render);
         input.addEventListener('change', render);
+        maxEnergyInput.addEventListener('input', render);
+        maxEnergyInput.addEventListener('change', render);
         useDetail.addEventListener('change', render);
         [dMain, dCleaner, dVent, dCap, dEpic].forEach(function (el) {
           el.addEventListener('input', render);
