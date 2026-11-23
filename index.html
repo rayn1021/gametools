@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>エナジー消費計算</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2rem; }
+
+      :root {
+        color-scheme: light dark;
+        --bg: #faf7f1;
+        --surface: #ffffff;
+        --surface-2: #f3ecdd;
+        --ink: #262019;
+        --ink-2: #6f6350;
+        --line: #e3d9c4;
+        --accent: #b97e0e;
+        --accent-strong: #96660a;
+        --hit-bg: #fbe3ae;
+        --hit-ink: #6d4c05;
+        --first-ring: #b97e0e;
+        --chip-bg: #ffffff;
+        --input-bg: #ffffff;
+        --shadow: 0 1px 2px rgba(80, 60, 10, .06), 0 8px 24px rgba(80, 60, 10, .07);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #171410;
+          --surface: #221e18;
+          --surface-2: #2b251c;
+          --ink: #f2ead9;
+          --ink-2: #b3a68c;
+          --line: #3d362a;
+          --accent: #e8b23f;
+          --accent-strong: #f5c95e;
+          --hit-bg: #574312;
+          --hit-ink: #ffd97a;
+          --first-ring: #e8b23f;
+          --chip-bg: #221e18;
+          --input-bg: #1b1813;
+          --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        line-height: 1.6;
+      }
+      .num { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+      main {
+        max-width: 660px;
+        margin: 0 auto;
+        padding: 28px 18px 56px;
+      }
+
+      h1 {
+        font-size: 1.65rem;
+        font-weight: 900;
+        letter-spacing: .02em;
+        margin: 0 0 4px;
+      }
+      .lede {
+        margin: 0 0 24px;
+        color: var(--ink-2);
+        font-size: .92rem;
+      }
+      .lede .game { font-weight: 700; color: var(--ink); }
+
+      /* ---------- input ---------- */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+        margin-bottom: 18px;
+      }
+      .field-label {
+        display: block;
+        font-weight: 700;
+        font-size: .95rem;
+        margin-bottom: 10px;
+      }
+      .field-label .unit-note { color: var(--ink-2); font-weight: 500; font-size: .8rem; margin-left: .4em; }
+      .input-row {
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .input-wrap {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        background: var(--input-bg);
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 6px 14px;
+        transition: border-color .15s ease;
+      }
+      .input-wrap:focus-within { border-color: var(--accent); }
+      .input-wrap input {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        background: transparent;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 1.9rem;
+        font-weight: 700;
+        padding: 4px 0;
+        outline: none;
+      }
+      .input-wrap input::placeholder { color: var(--ink-2); opacity: .55; }
+      .input-wrap.is-locked { opacity: .55; }
+      .input-wrap input:disabled { color: var(--ink-2); }
+
+      /* ---------- detail (endurance breakdown) ---------- */
+      .detail {
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+      }
+      .detail-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px 14px;
+        font: inherit;
+        font-weight: 700;
+        font-size: .92rem;
+        text-align: left;
+        color: var(--ink);
+        cursor: pointer;
+        background: var(--surface-2);
+        border: 0;
+        border-radius: 9px;
+        user-select: none;
+      }
+      .detail-toggle[aria-expanded="true"] { border-radius: 9px 9px 0 0; }
+      .detail-toggle .chev {
+        margin-left: auto;
+        color: var(--accent-strong);
+        font-size: .8rem;
+        transition: transform .15s ease;
+      }
+      .detail-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+      .detail-toggle .summary-total {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-weight: 700;
+        color: var(--accent-strong);
+      }
+      .detail-body { padding: 16px 14px 18px; }
+      .summary-cap {
+        font-size: .72rem;
+        font-weight: 700;
+        background: var(--hit-bg);
+        color: var(--hit-ink);
+        border-radius: 999px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        display: none;
+      }
+      .summary-cap.show { display: inline-block; }
+      .use-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: var(--hit-bg);
+        color: var(--hit-ink);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+        cursor: pointer;
+      }
+      .use-row input[type="checkbox"] {
+        width: 1.25rem; height: 1.25rem;
+        margin: 2px 0 0;
+        flex: 0 0 auto;
+        accent-color: var(--accent);
+      }
+      .use-row .use-text { font-weight: 700; font-size: .9rem; line-height: 1.45; }
+      .use-row .use-text small { display: block; font-weight: 500; font-size: .78rem; opacity: .85; }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .d-field label {
+        display: block;
+        font-weight: 700;
+        font-size: .95rem;
+        margin-bottom: 6px;
+        line-height: 1.4;
+      }
+      .d-field label .note { display: block; color: var(--ink-2); font-weight: 500; font-size: .8rem; margin-top: 2px; }
+      .d-field input[type="number"], .d-field select {
+        width: 100%;
+        background: var(--input-bg);
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding: 10px 12px;
+        outline: none;
+      }
+      .cap-preview {
+        margin-top: 8px;
+        background: var(--surface-2);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: .88rem;
+        line-height: 1.5;
+      }
+      .cap-preview .cp-formula { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 700; }
+      .cap-preview .cp-final { font-weight: 900; color: var(--accent-strong); }
+      .d-field input[type="number"]:focus, .d-field select:focus { border-color: var(--accent); }
+      .d-field.check-field {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        padding: 7px 10px;
+        min-height: 2.9rem;
+        cursor: pointer;
+      }
+      .d-field.check-field input[type="checkbox"] {
+        width: 1.25rem; height: 1.25rem;
+        margin: 0;
+        flex: 0 0 auto;
+        accent-color: var(--accent);
+      }
+      .d-field.check-field .check-label { font-weight: 700; font-size: .9rem; line-height: 1.35; }
+      .d-field.check-field .check-label small { display: block; color: var(--ink-2); font-weight: 500; font-size: .75rem; }
+      .breakdown { margin-top: 20px; border-top: 2px solid var(--line); }
+      .bd-row {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 2px 8px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: .92rem;
+      }
+      .bd-row .bd-k { font-weight: 700; }
+      .bd-row .bd-sub { color: var(--ink-2); font-size: .8rem; flex: 1 1 100%; order: 3; }
+      .bd-row .bd-v {
+        margin-left: auto;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-weight: 700;
+        font-size: 1.05rem;
+        white-space: nowrap;
+      }
+      .bd-row .bd-v.neg { color: #b23a1e; }
+      @media (prefers-color-scheme: dark) { .bd-row .bd-v.neg { color: #ff9a7a; } }
+      .bd-section {
+        margin: 16px 0 2px;
+        font-size: .8rem;
+        font-weight: 900;
+        letter-spacing: .06em;
+        color: var(--ink-2);
+      }
+      .bd-row.subtotal { background: var(--surface-2); border-radius: 8px; padding: 10px 10px; border-bottom: 0; margin-top: 10px; }
+      .bd-row.cap-total { border-bottom: 2px solid var(--line); }
+      .bd-row.cap-total .bd-v { color: var(--accent-strong); }
+      .capped-banner {
+        display: none;
+        margin-top: 12px;
+        background: var(--hit-bg);
+        color: var(--hit-ink);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: .88rem;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+      .capped-banner.show { display: block; }
+      .bd-row.total { border-bottom: 0; padding-top: 14px; }
+      .bd-row.total .bd-k { font-size: 1rem; }
+      .bd-row.total .bd-v { font-size: 1.5rem; color: var(--accent-strong); }
+      .detail-note { margin: 12px 0 0; color: var(--ink-2); font-size: .82rem; line-height: 1.6; }
+
+
+      /* ---------- stats ---------- */
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .stat {
+        background: var(--surface-2);
+        border-radius: 10px;
+        padding: 12px 14px;
+      }
+      .stat .k {
+        font-size: .76rem;
+        font-weight: 700;
+        color: var(--ink-2);
+        margin-bottom: 2px;
+      }
+      .stat .v {
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .stat .v small { font-size: .8rem; font-weight: 600; color: var(--ink-2); }
+
+      /* ---------- table ---------- */
+      h2 {
+        font-size: 1.05rem;
+        font-weight: 900;
+        margin: 26px 0 10px;
+      }
+      .table-wrap {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .col-hive { width: 31%; }
+      th, td {
+        padding: 13px 8px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      thead th {
+        background: var(--surface-2);
+        font-size: .85rem;
+        font-weight: 700;
+        color: var(--ink-2);
+        border-bottom: 2px solid var(--line);
+      }
+      thead th:first-child { text-align: left; padding-left: 16px; }
+      tbody th {
+        text-align: left;
+        padding-left: 16px;
+        font-weight: 700;
+        font-size: .92rem;
+        white-space: nowrap;
+      }
+      tbody th .hive-n {
+        display: inline-block;
+        min-width: 1.4em;
+        text-align: center;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 6px;
+        padding: 0 .3em;
+        margin-right: .45em;
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 700;
+      }
+      @media (prefers-color-scheme: dark) {
+        tbody th .hive-n { color: #241a02; }
+      }
+      tbody td {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 1.06rem;
+        font-weight: 600;
+      }
+      tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+      td.hit {
+        background: var(--hit-bg);
+        color: var(--hit-ink);
+        font-weight: 700;
+      }
+      td.first-hit {
+        box-shadow: inset 0 0 0 2px var(--first-ring);
+        border-radius: 4px;
+      }
+      td.empty { color: var(--ink-2); opacity: .5; }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        margin-top: 10px;
+        font-size: .8rem;
+        color: var(--ink-2);
+      }
+      .legend .swatch {
+        display: inline-block;
+        width: 14px; height: 14px;
+        border-radius: 4px;
+        vertical-align: -2px;
+        margin-right: 5px;
+        background: var(--hit-bg);
+        border: 1px solid var(--line);
+      }
+      .legend .swatch.ring {
+        background: transparent;
+        box-shadow: inset 0 0 0 2px var(--first-ring);
+        border: 0;
+      }
+
+      /* ---------- reach-3 list ---------- */
+      .reach {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 6px 20px;
+      }
+      .reach-row {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: .92rem;
+        flex-wrap: wrap;
+      }
+      .reach-row:last-child { border-bottom: 0; }
+      .reach-row .who { font-weight: 700; white-space: nowrap; }
+      .reach-row .what { margin-left: auto; text-align: right; }
+      .reach-row .what b { font-family: "IBM Plex Mono", monospace; font-size: 1.02rem; }
+      .reach-row .waste { color: var(--ink-2); font-size: .82rem; }
+      .reach-row .waste b { color: var(--accent-strong); font-size: .9rem; }
+
+      .formula {
+        margin-top: 26px;
+        color: var(--ink-2);
+        font-size: .83rem;
+      }
+      .formula .box {
+        background: var(--surface-2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: .9rem;
+        color: var(--ink);
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .formula p { margin: 4px 0; }
+
+      @media (max-width: 480px) {
+        main { padding: 24px 12px 48px; }
+        .panel { padding: 16px 14px; }
+        .detail-toggle { flex-wrap: wrap; padding: 12px; }
+        .detail-toggle .summary-total { margin-left: auto; font-size: 1.1rem; }
+        .detail-toggle .chev { margin-left: 4px; }
+        .use-row { padding: 12px; }
+        .reach { padding: 6px 14px; }
+        .reach-row { display: block; padding: 12px 0; }
+        .reach-row .who { display: block; margin-bottom: 2px; }
+        .reach-row .what { display: block; margin-left: 0; text-align: left; }
+        .stat .v { font-size: 1.15rem; }
+        th, td { padding: 11px 3px; }
+        tbody td { font-size: .95rem; }
+        thead th { font-size: .8rem; }
+        thead th:first-child, tbody th { padding-left: 8px; }
+        .col-hive { width: 15%; }
+        /* 狭い画面では行見出しを番号バッジだけにして、5分列まで全列を収める（読み上げ用にラベルは残す） */
+        tbody th .hive-label {
+          position: absolute;
+          width: 1px; height: 1px;
+          overflow: hidden;
+          clip-path: inset(50%);
+          white-space: nowrap;
+        }
+        tbody th .hive-n { margin-right: 0; }
+        .stats { grid-template-columns: 1fr 1fr; }
+        .input-wrap input { font-size: 1.6rem; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>エナジー消費計算</h1>
+      <p class="lede"><span class="game">The Life Bomb</span> のイベント用。エンデュランスを入れると、ハイブ1〜4個を同時に回したときの消費エナジーが分かります。</p>
+
+      <section class="panel" aria-label="エンデュランス入力">
+        <label class="field-label" for="endurance">エンデュランス<span class="unit-note">小数第2位まで</span></label>
+        <div class="input-row">
+          <div class="input-wrap" id="endurance-wrap">
+            <input id="endurance" class="num" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="3.00" value="3.00" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="detail" id="detail-box">
+          <button type="button" class="detail-toggle" id="detail-toggle" aria-expanded="false" aria-controls="detail-body">エンデュランスを内訳から計算する<span class="summary-cap" id="summary-cap">上限でカット</span><span class="summary-total num" id="summary-total">2.60</span><span class="chev" aria-hidden="true">▾</span></button>
+          <div class="detail-body" id="detail-body">
+            <label class="use-row" for="use-detail">
+              <input type="checkbox" id="use-detail" />
+              <span class="use-text">詳細入力の計算結果を使う<small>チェックすると、下の内訳で出したエンデュランスで上の表を計算します（上の入力欄はロックされます）</small></span>
+            </label>
+
+            <div class="detail-grid">
+              <div class="d-field">
+                <label for="d-main">メインビー基礎<span class="note">手入力</span></label>
+                <input id="d-main" class="num" type="number" inputmode="decimal" step="0.01" min="0" placeholder="1.60" value="1.60" autocomplete="off" />
+              </div>
+              <div class="d-field">
+                <label for="d-cleaner">クリーナー<span class="note">サポート蜂・最大2匹</span></label>
+                <select id="d-cleaner">
+                  <option value="0" selected>0匹</option>
+                  <option value="1">1匹（−15%）</option>
+                  <option value="2">2匹（−30%）</option>
+                </select>
+              </div>
+              <div class="d-field">
+                <label for="d-vent">ベンチレーター<span class="note">匹数を手入力</span></label>
+                <input id="d-vent" class="num" type="number" inputmode="numeric" step="1" min="0" placeholder="20" value="20" autocomplete="off" />
+              </div>
+              <label class="d-field check-field" for="d-epic">
+                <input type="checkbox" id="d-epic" />
+                <span class="check-label">エピックあり<small>本体に +0.50、上限にも +0.50 します</small></span>
+              </label>
+              <div class="d-field">
+                <label for="d-cap">上限 ― エピック抜き<span class="note">ゲーム画面の「Your base cap」を入れてください。エピック分は含みません</span></label>
+                <input id="d-cap" class="num" type="number" inputmode="decimal" step="0.01" min="0" placeholder="3.00" value="3.00" autocomplete="off" />
+                <div class="cap-preview" id="cap-preview">エピック込みの上限：<span class="cp-formula" id="cap-formula">3.00</span> ＝ <span class="cp-final num" id="cap-final">3.00</span><br />実際に効く上限は、この数字（エピック込み）です。</div>
+              </div>
+            </div>
+
+            <div class="breakdown" aria-label="エンデュランスの内訳">
+              <div class="bd-section">本体の計算</div>
+              <div class="bd-row"><span class="bd-k">メインビー基礎</span><span class="bd-v num" id="bd-main">1.60</span></div>
+              <div class="bd-row"><span class="bd-k">クリーナー</span><span class="bd-sub" id="bd-cleaner-sub">なし</span><span class="bd-v num neg" id="bd-cleaner">0.00</span></div>
+              <div class="bd-row"><span class="bd-k">ベンチレーター</span><span class="bd-sub" id="bd-vent-sub">20 × 0.05</span><span class="bd-v num" id="bd-vent">+1.00</span></div>
+              <div class="bd-row"><span class="bd-k">エピック</span><span class="bd-v num" id="bd-epic">0.00</span></div>
+              <div class="bd-row subtotal"><span class="bd-k">小計</span><span class="bd-sub">上限をかける前の合計</span><span class="bd-v num" id="bd-raw">2.60</span></div>
+
+              <div class="bd-section">上限（MAX）の計算</div>
+              <div class="bd-row"><span class="bd-k">上限 ― エピック抜き</span><span class="bd-sub">上で入れた「Your base cap」</span><span class="bd-v num" id="bd-cap-base">3.00</span></div>
+              <div class="bd-row"><span class="bd-k">エピック分</span><span class="bd-v num" id="bd-cap-epic">0.00</span></div>
+              <div class="bd-row cap-total"><span class="bd-k">上限 ― エピック込み</span><span class="bd-sub">実際に効く上限はこれ</span><span class="bd-v num" id="bd-cap-total">3.00</span></div>
+
+              <div class="capped-banner" id="bd-capped-banner">上限でカットされました：小計 <span class="num" id="bd-capped-raw">4.40</span> のうち、超えた <span class="num" id="bd-capped-over">0.40</span> は切り捨てられます。</div>
+
+              <div class="bd-row total" id="bd-total-row"><span class="bd-k">実効エンデュランス</span><span class="bd-sub" id="bd-cap-note">小計と上限の小さい方</span><span class="bd-v num" id="bd-total">2.60</span></div>
+            </div>
+            <p class="detail-note">クリーナーはメインビー基礎に対する割合で引かれます（1匹 −15%）。ベンチレーターは1匹 +0.05 です。<br />上限は2段で見ます：エピック抜きの上限に、エピック分 +0.50 を足したものが「実際に効く上限」です。小計がそれを超えたら、実効は上限で止まります。</p>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k">1分あたりの消費（1ハイブ）</div>
+            <div class="v num" id="stat-per-min">—</div>
+          </div>
+          <div class="stat">
+            <div class="k">1エナジーの消化時間（1ハイブ）</div>
+            <div class="v num" id="stat-per-one">—</div>
+          </div>
+        </div>
+      </section>
+
+      <h2>消費エナジー早見表</h2>
+      <div class="table-wrap">
+        <table aria-label="ハイブ数と分数ごとの消費エナジー">
+          <colgroup>
+            <col class="col-hive" />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">ハイブ</th>
+              <th scope="col">1分</th>
+              <th scope="col">2分</th>
+              <th scope="col">3分</th>
+              <th scope="col">4分</th>
+              <th scope="col">5分</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><span class="swatch"></span>3.00以上（ネクターが落ちるライン）</span>
+        <span><span class="swatch ring"></span>太枠 = そのハイブ数で3に届く最短の分数</span>
+      </div>
+
+      <h2>3エナジーに届く最短パターン</h2>
+      <div class="reach" id="reach"></div>
+
+      <div class="formula">
+        <div class="box">消費エナジー ＝ エンデュランス ÷ 6 × ハイブ数 × 分数</div>
+        <p>・1ハイブが1エナジーを消化する時間は「6 ÷ エンデュランス」分です。</p>
+        <p>・表示は小数第2位まで（第3位以下は切り捨て）。例：エンデュランス4なら1分で0.66。</p>
+        <p>・エナジー消費は1分ごとの刻みなので、分数は整数分で見ます。</p>
+        <p>・詳細入力の小計 ＝ メインビー基礎 − クリーナー（基礎の15%×匹数）＋ ベンチレーター（匹数×0.05）＋ エピック0.50。</p>
+        <p>・上限（エピック込み）＝ 上限（エピック抜き）＋ エピック0.50。実効エンデュランスは、小計と上限（エピック込み）の小さい方です。</p>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var input = document.getElementById('endurance');
+        var inputWrap = document.getElementById('endurance-wrap');
+        var tbody = document.getElementById('tbody');
+        var reachEl = document.getElementById('reach');
+        var perMinEl = document.getElementById('stat-per-min');
+        var perOneEl = document.getElementById('stat-per-one');
+
+        var useDetail = document.getElementById('use-detail');
+        var dMain = document.getElementById('d-main');
+        var dCleaner = document.getElementById('d-cleaner');
+        var dVent = document.getElementById('d-vent');
+        var dCap = document.getElementById('d-cap');
+        var dEpic = document.getElementById('d-epic');
+        var summaryTotal = document.getElementById('summary-total');
+        var bdMain = document.getElementById('bd-main');
+        var bdCleaner = document.getElementById('bd-cleaner');
+        var bdCleanerSub = document.getElementById('bd-cleaner-sub');
+        var bdVent = document.getElementById('bd-vent');
+        var bdVentSub = document.getElementById('bd-vent-sub');
+        var bdEpic = document.getElementById('bd-epic');
+        var bdTotal = document.getElementById('bd-total');
+        var bdTotalRow = document.getElementById('bd-total-row');
+        var bdCapNote = document.getElementById('bd-cap-note');
+        var summaryCap = document.getElementById('summary-cap');
+        var capFormula = document.getElementById('cap-formula');
+        var capFinal = document.getElementById('cap-final');
+        var bdRaw = document.getElementById('bd-raw');
+        var bdCapBase = document.getElementById('bd-cap-base');
+        var bdCapEpic = document.getElementById('bd-cap-epic');
+        var bdCapTotal = document.getElementById('bd-cap-total');
+        var cappedBanner = document.getElementById('bd-capped-banner');
+        var cappedRaw = document.getElementById('bd-capped-raw');
+        var cappedOver = document.getElementById('bd-capped-over');
+
+        // 開閉メニュー：閉じている間は中身をDOMから外しておく（入力値はノードごと保持される）
+        var detailBox = document.getElementById('detail-box');
+        var detailToggle = document.getElementById('detail-toggle');
+        var detailBody = document.getElementById('detail-body');
+        detailBox.removeChild(detailBody);
+        detailToggle.addEventListener('click', function () {
+          if (detailBody.parentNode === detailBox) {
+            detailBox.removeChild(detailBody);
+            detailToggle.setAttribute('aria-expanded', 'false');
+          } else {
+            detailBox.appendChild(detailBody);
+            detailToggle.setAttribute('aria-expanded', 'true');
+          }
+        });
+
+        // 小数第3位以下を切り捨てて、2桁表示にする
+        function fmt(v) {
+          var t = Math.floor(v * 100 + 1e-9) / 100;
+          return t.toFixed(2);
+        }
+        function trunc2(v) { return Math.floor(v * 100 + 1e-9) / 100; }
+        function signed(v) { return (v > 0 ? '+' : (v < 0 ? '−' : '')) + fmt(Math.abs(v)); }
+
+        // 内訳から実効エンデュランスを出す
+        // クリーナーは基礎に対する割合（1匹-15%）を切り捨ててから引く。例: 基礎2.05・2匹 → -0.61
+        function computeDetail() {
+          var main = parseFloat(dMain.value);
+          if (isNaN(main) || main < 0) return null;
+          var cleanerN = parseInt(dCleaner.value, 10) || 0;
+          var ventN = parseFloat(dVent.value);
+          if (isNaN(ventN) || ventN < 0) ventN = 0;
+          var capBase = parseFloat(dCap.value);
+          if (isNaN(capBase) || capBase < 0) capBase = 0;
+          var epicBonus = dEpic.checked ? 0.5 : 0;
+
+          var cleanerCut = trunc2(main * 0.15 * cleanerN);
+          var ventBonus = trunc2(ventN * 0.05);
+          var raw = main - cleanerCut + ventBonus + epicBonus;
+          var cap = capBase + epicBonus;
+          var total = trunc2(Math.min(raw, cap));
+          return {
+            main: main, cleanerN: cleanerN, cleanerCut: cleanerCut,
+            ventN: ventN, ventBonus: ventBonus, epicBonus: epicBonus,
+            capBase: capBase,
+            raw: raw, cap: cap, capped: raw > cap + 1e-9, total: total
+          };
+        }
+
+        function renderDetail() {
+          var d = computeDetail();
+          if (d === null) {
+            summaryTotal.textContent = '—';
+            summaryCap.className = 'summary-cap';
+            bdMain.textContent = '—';
+            bdCleaner.textContent = '—';
+            bdVent.textContent = '—';
+            bdEpic.textContent = dEpic.checked ? '+0.50' : '0.00';
+            bdRaw.textContent = '—';
+            bdCapBase.textContent = '—';
+            bdCapEpic.textContent = dEpic.checked ? '+0.50' : '0.00';
+            bdCapTotal.textContent = '—';
+            capFormula.textContent = '—';
+            capFinal.textContent = '—';
+            cappedBanner.className = 'capped-banner';
+            bdTotal.textContent = '—';
+            bdCapNote.textContent = '';
+            bdTotalRow.className = 'bd-row total';
+            return null;
+          }
+          summaryTotal.textContent = fmt(d.total);
+          summaryCap.className = 'summary-cap' + (d.capped ? ' show' : '');
+          bdMain.textContent = fmt(d.main);
+          bdCleanerSub.textContent = d.cleanerN > 0 ? ('基礎の −15% × ' + d.cleanerN + '匹') : 'なし';
+          bdCleaner.textContent = d.cleanerCut > 0 ? ('−' + fmt(d.cleanerCut)) : '0.00';
+          bdVentSub.textContent = d.ventN + ' × 0.05';
+          bdVent.textContent = signed(d.ventBonus);
+          bdEpic.textContent = d.epicBonus > 0 ? '+0.50' : '0.00';
+          bdRaw.textContent = fmt(trunc2(d.raw));
+          bdCapBase.textContent = fmt(d.capBase);
+          bdCapEpic.textContent = d.epicBonus > 0 ? '+0.50' : '0.00';
+          bdCapTotal.textContent = fmt(d.cap);
+          capFormula.textContent = d.epicBonus > 0 ? (fmt(d.capBase) + ' ＋ 0.50') : fmt(d.capBase);
+          capFinal.textContent = fmt(d.cap);
+          if (d.capped) {
+            cappedRaw.textContent = fmt(trunc2(d.raw));
+            cappedOver.textContent = fmt(trunc2(d.raw - d.cap));
+            cappedBanner.className = 'capped-banner show';
+          } else {
+            cappedBanner.className = 'capped-banner';
+          }
+          bdTotal.textContent = fmt(d.total);
+          bdCapNote.textContent = d.capped
+            ? ('小計 ' + fmt(trunc2(d.raw)) + ' → 上限 ' + fmt(d.cap) + ' で止まります')
+            : ('小計 ' + fmt(trunc2(d.raw)) + ' ／ 上限 ' + fmt(d.cap) + ' 以内');
+          bdTotalRow.className = 'bd-row total';
+          return d;
+        }
+
+        function parseEndurance() {
+          if (useDetail.checked) {
+            var d = computeDetail();
+            if (d === null || d.total <= 0) return null;
+            return d.total;
+          }
+          var v = parseFloat(input.value);
+          if (isNaN(v) || v <= 0) return null;
+          return v;
+        }
+
+        function render() {
+          var d = renderDetail();
+          if (useDetail.checked) {
+            input.disabled = true;
+            inputWrap.classList.add('is-locked');
+            input.value = (d !== null && d.total > 0) ? fmt(d.total) : '';
+          } else {
+            input.disabled = false;
+            inputWrap.classList.remove('is-locked');
+          }
+          var e = parseEndurance();
+          var h, m;
+
+          if (e === null) {
+            perMinEl.textContent = '—';
+            perOneEl.textContent = '—';
+            var rowsHtml = '';
+            for (h = 1; h <= 4; h++) {
+              rowsHtml += '<tr><th scope="row"><span class="hive-n">' + h + '</span><span class="hive-label">ハイブ' + h + '個</span></th>';
+              for (m = 1; m <= 5; m++) rowsHtml += '<td class="empty">—</td>';
+              rowsHtml += '</tr>';
+            }
+            tbody.innerHTML = rowsHtml;
+            reachEl.innerHTML = '<div class="reach-row"><span class="who">エンデュランスを入力してください</span></div>';
+            return;
+          }
+
+          var perMin = e / 6;               // 1ハイブ・1分あたり
+          var perOne = 6 / e;               // 1ハイブで1エナジーにかかる分数
+          perMinEl.innerHTML = fmt(perMin) + ' <small>エナジー</small>';
+
+          var wholeMin = Math.floor(perOne);
+          var sec = Math.round((perOne - wholeMin) * 60);
+          if (sec === 60) { wholeMin += 1; sec = 0; }
+          var timeText;
+          if (wholeMin > 0) {
+            timeText = wholeMin + '分' + (sec > 0 ? (' ' + sec + '秒') : '');
+          } else {
+            timeText = sec + '秒';
+          }
+          perOneEl.innerHTML = timeText + ' <small>（' + fmt(perOne) + '分）</small>';
+
+          // 早見表
+          var html = '';
+          for (h = 1; h <= 4; h++) {
+            html += '<tr><th scope="row"><span class="hive-n">' + h + '</span><span class="hive-label">ハイブ' + h + '個</span></th>';
+            var firstHitFound = false;
+            for (m = 1; m <= 5; m++) {
+              var v = perMin * h * m;
+              var cls = '';
+              if (v >= 3) {
+                cls = 'hit';
+                if (!firstHitFound) { cls += ' first-hit'; firstHitFound = true; }
+              }
+              html += '<td class="' + cls + '">' + fmt(v) + '</td>';
+            }
+            html += '</tr>';
+          }
+          tbody.innerHTML = html;
+
+          // 3エナジーに届く最短パターン（表の範囲外の分数も含めて計算）
+          var rHtml = '';
+          for (h = 1; h <= 4; h++) {
+            var rate = perMin * h;
+            var need = Math.ceil(3 / rate - 1e-9);
+            var used = rate * need;
+            var waste = used - 3;
+            rHtml += '<div class="reach-row">' +
+              '<span class="who">ハイブ' + h + '個</span>' +
+              '<span class="what"><b>' + need + '分</b> で <b>' + fmt(used) + '</b> 消費' +
+              ' <span class="waste">（ムダ <b>' + fmt(waste) + '</b>）</span></span>' +
+              '</div>';
+          }
+          reachEl.innerHTML = rHtml;
+        }
+
+        input.addEventListener('input', render);
+        input.addEventListener('change', render);
+        useDetail.addEventListener('change', render);
+        [dMain, dCleaner, dVent, dCap, dEpic].forEach(function (el) {
+          el.addEventListener('input', render);
+          el.addEventListener('change', render);
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>
