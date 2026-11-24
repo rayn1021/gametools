@@ -416,6 +416,36 @@
         border: 0;
       }
 
+      /* ---------- hive pick ---------- */
+      .hive-pick {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 6px 20px;
+      }
+      .hive-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 6px;
+        border-bottom: 1px solid var(--line);
+        font-size: .95rem;
+        cursor: pointer;
+        border-radius: 8px;
+      }
+      .hive-row:last-child { border-bottom: 0; }
+      .hive-row input[type="radio"] {
+        width: 1.25rem; height: 1.25rem;
+        margin: 0;
+        flex: 0 0 auto;
+        accent-color: var(--accent);
+      }
+      .hive-row .hive-name { font-weight: 700; }
+      .hive-row .hive-min { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-weight: 700; }
+      .hive-row .hive-min small { font-family: inherit; color: var(--ink-2); font-weight: 500; font-size: .8rem; }
+      .hive-row:has(input:checked) { background: var(--surface-2); }
+
       .formula {
         margin-top: 26px;
         color: var(--ink-2);
@@ -458,7 +488,7 @@
       }
       .tab-btn small { display: block; font-weight: 500; font-size: .72rem; }
       .tab-btn[aria-selected="true"] {
-        background: var(--surface);
+        background: #303030;
         color: var(--ink);
         box-shadow: var(--shadow);
       }
@@ -589,18 +619,18 @@
 
         <div class="stats">
           <div class="stat">
-            <div class="k">1分あたりの消費（1ハイブ）</div>
+            <div class="k">1分あたりの消費</div>
             <div class="v num" id="stat-per-min">—</div>
           </div>
           <div class="stat">
-            <div class="k">1エナジーの消化時間（1ハイブ）</div>
+            <div class="k">1エナジーの消化時間</div>
             <div class="v num" id="stat-per-one">—</div>
           </div>
         </div>
       </section>
 
       <div class="tabs" role="tablist" aria-label="ツールの切り替え">
-        <button type="button" class="tab-btn" role="tab" id="tab-daily" aria-selected="true" aria-controls="panel-daily">通常<small>分数ごとの歩く時間</small></button>
+        <button type="button" class="tab-btn" role="tab" id="tab-daily" aria-selected="true" aria-controls="panel-daily">エナジー計算<small>分数ごとの歩く時間</small></button>
         <button type="button" class="tab-btn" role="tab" id="tab-event" aria-selected="false" aria-controls="panel-event">イベント<small>期間中だけ使う早見表</small></button>
       </div>
 
@@ -616,7 +646,14 @@
         </section>
 
         <div class="table-wrap">
-          <table aria-label="分数ごとの歩く時間">
+          <table class="frac-table" aria-label="分数ごとの歩く時間">
+            <colgroup>
+              <col style="width:14%" />
+              <col style="width:19%" />
+              <col style="width:23%" />
+              <col style="width:22%" />
+              <col style="width:22%" />
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col">分数</th>
@@ -632,6 +669,9 @@
       </div>
 
       <div id="panel-event" role="tabpanel" aria-labelledby="tab-event" hidden>
+      <h2>ハイブ選択</h2>
+      <div class="hive-pick" id="hive-pick"></div>
+
       <h2>消費エナジー早見表</h2>
       <div class="table-wrap">
         <table aria-label="ハイブ数と分数ごとの消費エナジー">
@@ -683,6 +723,31 @@
         var maxEnergyInput = document.getElementById('max-energy');
         var dailyRateEl = document.getElementById('daily-rate');
         var fracBody = document.getElementById('frac-body');
+        var hivePickEl = document.getElementById('hive-pick');
+        var hiveSel = 1;
+        hivePickEl.addEventListener('change', function (e) {
+          var v = parseInt(e.target && e.target.value, 10);
+          if (v >= 1 && v <= 4) hiveSel = v;
+        });
+        function buildHivePick(e) {
+          var html = '';
+          for (var h = 1; h <= 4; h++) {
+            var minHtml;
+            if (e === null) {
+              minHtml = '—';
+            } else {
+              var rate = (e / 6) * h;
+              var need = Math.ceil(3 / rate - 1e-9);
+              minHtml = '<b>' + need + '</b> <small>分で3エナジー</small>';
+            }
+            html += '<label class="hive-row">' +
+              '<input type="radio" name="tlb-hive" value="' + h + '"' +
+              (h === hiveSel ? ' checked' : '') + ' />' +
+              '<span class="hive-name">ハイブ' + h + '個</span>' +
+              '<span class="hive-min">' + minHtml + '</span></label>';
+          }
+          hivePickEl.innerHTML = html;
+        }
 
         // タブ切り替え（通常が本体、イベントは別タブ）
         var tabDaily = document.getElementById('tab-daily');
@@ -939,6 +1004,7 @@
               rowsHtml += '</tr>';
             }
             tbody.innerHTML = rowsHtml;
+            buildHivePick(null);
             return;
           }
 
@@ -955,7 +1021,7 @@
           } else {
             timeText = sec + '秒';
           }
-          perOneEl.innerHTML = timeText + ' <small>（' + fmt(perOne) + '分）</small>';
+          perOneEl.textContent = timeText;
 
           // 早見表
           var html = '';
@@ -974,7 +1040,7 @@
             html += '</tr>';
           }
           tbody.innerHTML = html;
-
+          buildHivePick(e);
         }
 
         input.addEventListener('input', render);
