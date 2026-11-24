@@ -300,6 +300,45 @@
       .detail-note { margin: 12px 0 0; color: var(--ink-2); font-size: .82rem; line-height: 1.6; }
 
 
+      /* ---------- land ---------- */
+      .land-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+      .land-chip {
+        background: var(--input-bg);
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        color: var(--ink);
+        font: inherit;
+        font-size: .9rem;
+        font-weight: 700;
+        padding: 6px 14px;
+        cursor: pointer;
+        min-height: 2.4rem;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .land-chip.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .land-chip.add { border-style: dashed; color: var(--ink-2); }
+      .land-edit { display: flex; gap: 10px; align-items: stretch; }
+      .land-edit .input-wrap { flex: 1 1 auto; }
+      .land-edit .input-wrap input { font-family: inherit; font-size: 1.05rem; font-weight: 700; }
+      .land-del {
+        flex: 0 0 auto;
+        background: var(--surface-2);
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        color: var(--ink);
+        font: inherit;
+        font-size: .88rem;
+        font-weight: 700;
+        padding: 0 14px;
+        cursor: pointer;
+      }
+      .land-del:disabled { opacity: .4; cursor: default; }
+      .land-del.armed { background: #b71c1c; border-color: #b71c1c; color: #ffffff; }
+      .land-note { margin: 12px 0 0; color: var(--ink-2); font-size: .82rem; line-height: 1.6; }
+
       /* ---------- stats ---------- */
       .stats {
         display: grid;
@@ -538,6 +577,18 @@
     <main>
       <h1>エナジー消費計算</h1>
       <p class="lede"><span class="game">The Life Bomb</span> 用。ふだんの100%消化に必要な「歩く分数」を出すのが本体で、イベント用の早見表は別タブに分けてあります。エンデュランス入力は両タブ共通です。</p>
+
+      <section class="panel" aria-label="ランド選択">
+        <span class="field-label">ランド</span>
+        <div class="land-chips" id="land-chips"></div>
+        <div class="land-edit">
+          <div class="input-wrap">
+            <input id="land-name" type="text" autocomplete="off" aria-label="ランド名" />
+          </div>
+          <button type="button" class="land-del" id="land-del">削除</button>
+        </div>
+        <p class="land-note">ランドごとに、エンデュランスの内訳・最大エナジー・ハイブ数をまとめて記憶します。入力を変えると、そのランドに自動で保存されます。</p>
+      </section>
 
       <section class="panel" aria-label="エンデュランス入力">
         <label class="field-label" for="endurance">エンデュランス<span class="unit-note">小数第2位まで</span></label>
@@ -1054,6 +1105,147 @@
         });
 
         render();
+
+        // ---------- ランド（設定一式の登録・切替） ----------
+        // ランドごとに、エンデュランス（直接入力と内訳一式）・最大エナジー・
+        // ハイブ数をまとめて記憶する。保存先は localStorage（アプリ版の
+        // WebView でもそのまま使える）。入力の変更は自動で現在のランドへ保存する。
+        var LAND_KEY = 'tlb.lands.v1';
+        var landChips = document.getElementById('land-chips');
+        var landNameInput = document.getElementById('land-name');
+        var landDelBtn = document.getElementById('land-del');
+        var lands = null;
+        var landApplying = false;
+
+        function escapeHtml(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        }
+        function landSnapshot() {
+          var checked = hivePickEl.querySelector('input[name="tlb-hive"]:checked');
+          var hive = checked ? parseInt(checked.value, 10) : hiveSel;
+          if (!(hive >= 1 && hive <= 4)) hive = 1;
+          return {
+            name: landNameInput.value || '',
+            endurance: input.value,
+            useDetail: !!useDetail.checked,
+            dMain: dMain.value,
+            dSupport1: dSupport1.value,
+            dSupport2: dSupport2.value,
+            dVent: dVent.value,
+            dEpic: !!dEpic.checked,
+            dCap: dCap.value,
+            maxEnergy: maxEnergyInput.value,
+            hive: hive
+          };
+        }
+        function landPersist() {
+          try { localStorage.setItem(LAND_KEY, JSON.stringify(lands)); } catch (e) { }
+        }
+        function landRenderChips() {
+          var html = '';
+          for (var i = 0; i < lands.list.length; i++) {
+            var nm = lands.list[i].name || ('ランド' + (i + 1));
+            html += '<button type="button" class="land-chip' + (i === lands.cur ? ' is-on' : '') +
+              '" data-i="' + i + '">' + escapeHtml(nm) + '</button>';
+          }
+          html += '<button type="button" class="land-chip add" id="land-add">＋ 追加</button>';
+          landChips.innerHTML = html;
+          landDelBtn.disabled = lands.list.length <= 1;
+        }
+        function landApply(idx) {
+          lands.cur = idx;
+          var L = lands.list[idx];
+          landApplying = true;
+          landNameInput.value = L.name || '';
+          input.value = L.endurance != null ? L.endurance : '';
+          useDetail.checked = !!L.useDetail;
+          dMain.value = L.dMain != null ? L.dMain : '';
+          dSupport1.value = L.dSupport1 || 'none';
+          dSupport2.value = L.dSupport2 || 'none';
+          dVent.value = L.dVent != null ? L.dVent : '';
+          dEpic.checked = !!L.dEpic;
+          dCap.value = L.dCap != null ? L.dCap : '';
+          maxEnergyInput.value = L.maxEnergy != null ? L.maxEnergy : '';
+          hiveSel = (L.hive >= 1 && L.hive <= 4) ? L.hive : 1;
+          render();
+          landRenderChips();
+          landPersist();
+          landApplying = false;
+          // アプリ版へも知らせる（ハイブ選択の反映と、入力保存の連動）
+          var radio = hivePickEl.querySelector('input[name="tlb-hive"]:checked');
+          if (radio) radio.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        var landSaveTimer = null;
+        function landQueueSave() {
+          if (landApplying || !lands) return;
+          if (landSaveTimer) clearTimeout(landSaveTimer);
+          landSaveTimer = setTimeout(function () {
+            lands.list[lands.cur] = landSnapshot();
+            landPersist();
+            landRenderChips();
+          }, 250);
+        }
+        document.addEventListener('input', landQueueSave, true);
+        document.addEventListener('change', landQueueSave, true);
+
+        landChips.addEventListener('click', function (e) {
+          if (e.target.closest('#land-add')) {
+            var copy = landSnapshot();
+            copy.name = 'ランド' + (lands.list.length + 1);
+            lands.list.push(copy);
+            landApply(lands.list.length - 1);
+            return;
+          }
+          var chip = e.target.closest('.land-chip[data-i]');
+          if (chip) {
+            var i = parseInt(chip.getAttribute('data-i'), 10);
+            if (i !== lands.cur) {
+              lands.list[lands.cur] = landSnapshot();
+              landApply(i);
+            }
+          }
+        });
+
+        // 削除は2度押しで確定（アプリ版 WebView では confirm が出ないため）
+        var landDelArmed = false;
+        var landDelTimer = null;
+        landDelBtn.addEventListener('click', function () {
+          if (lands.list.length <= 1) return;
+          if (!landDelArmed) {
+            landDelArmed = true;
+            landDelBtn.textContent = '本当に削除';
+            landDelBtn.classList.add('armed');
+            landDelTimer = setTimeout(function () {
+              landDelArmed = false;
+              landDelBtn.textContent = '削除';
+              landDelBtn.classList.remove('armed');
+            }, 3000);
+            return;
+          }
+          clearTimeout(landDelTimer);
+          landDelArmed = false;
+          landDelBtn.textContent = '削除';
+          landDelBtn.classList.remove('armed');
+          lands.list.splice(lands.cur, 1);
+          landApply(Math.min(lands.cur, lands.list.length - 1));
+        });
+
+        (function landInit() {
+          var stored = null;
+          try { stored = JSON.parse(localStorage.getItem(LAND_KEY) || 'null'); } catch (e) { }
+          if (stored && stored.list && stored.list.length) {
+            lands = stored;
+            if (!(lands.cur >= 0 && lands.cur < lands.list.length)) lands.cur = 0;
+          } else {
+            var first = landSnapshot();
+            if (!first.name) first.name = 'ランド1';
+            lands = { list: [first], cur: 0 };
+          }
+          landApply(lands.cur);
+        })();
       })();
     </script>
   </body>
