@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
     <link rel="icon" href="data:," />
     <title>エナジー消費計算</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,39 +13,22 @@
       button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2rem; }
 
       :root {
-        color-scheme: light dark;
-        --bg: #faf7f1;
-        --surface: #ffffff;
-        --surface-2: #f3ecdd;
-        --ink: #262019;
-        --ink-2: #6f6350;
-        --line: #e3d9c4;
-        --accent: #b97e0e;
-        --accent-strong: #96660a;
-        --hit-bg: #fbe3ae;
-        --hit-ink: #6d4c05;
-        --first-ring: #b97e0e;
-        --chip-bg: #ffffff;
-        --input-bg: #ffffff;
-        --shadow: 0 1px 2px rgba(80, 60, 10, .06), 0 8px 24px rgba(80, 60, 10, .07);
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #171410;
-          --surface: #221e18;
-          --surface-2: #2b251c;
-          --ink: #f2ead9;
-          --ink-2: #b3a68c;
-          --line: #3d362a;
-          --accent: #e8b23f;
-          --accent-strong: #f5c95e;
-          --hit-bg: #574312;
-          --hit-ink: #ffd97a;
-          --first-ring: #e8b23f;
-          --chip-bg: #221e18;
-          --input-bg: #1b1813;
-          --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
-        }
+        color-scheme: dark;
+        --bg: #000000;
+        --surface: #141414;
+        --surface-2: #1f1f1f;
+        --ink: #f5f5f5;
+        --ink-2: #a3a3a3;
+        --line: #2e2e2e;
+        --accent: #e8e8e8;
+        --accent-strong: #ffffff;
+        --accent-ink: #111111;
+        --hit-bg: #2e2e2e;
+        --hit-ink: #ffffff;
+        --first-ring: #ffffff;
+        --chip-bg: #141414;
+        --input-bg: #0d0d0d;
+        --shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.45);
       }
 
       * { box-sizing: border-box; }
@@ -249,7 +232,7 @@
         min-height: 2.75rem;
         white-space: nowrap;
       }
-      .seg-btn.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .seg-btn.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
       .d-field.check-field {
         grid-column: 1 / -1;
         display: flex;
@@ -288,8 +271,7 @@
         font-size: 1.05rem;
         white-space: nowrap;
       }
-      .bd-row .bd-v.neg { color: #b23a1e; }
-      @media (prefers-color-scheme: dark) { .bd-row .bd-v.neg { color: #ff9a7a; } }
+      .bd-row .bd-v.neg { color: #ff9a7a; }
       .bd-section {
         margin: 16px 0 2px;
         font-size: .8rem;
@@ -387,15 +369,12 @@
         min-width: 1.4em;
         text-align: center;
         background: var(--accent);
-        color: #fff;
+        color: var(--accent-ink);
         border-radius: 6px;
         padding: 0 .3em;
         margin-right: .45em;
         font-family: "IBM Plex Mono", monospace;
         font-weight: 700;
-      }
-      @media (prefers-color-scheme: dark) {
-        tbody th .hive-n { color: #241a02; }
       }
       tbody td {
         font-family: "IBM Plex Mono", ui-monospace, monospace;
@@ -436,30 +415,6 @@
         box-shadow: inset 0 0 0 2px var(--first-ring);
         border: 0;
       }
-
-      /* ---------- reach-3 list ---------- */
-      .reach {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        box-shadow: var(--shadow);
-        padding: 6px 20px;
-      }
-      .reach-row {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-        padding: 11px 0;
-        border-bottom: 1px solid var(--line);
-        font-size: .92rem;
-        flex-wrap: wrap;
-      }
-      .reach-row:last-child { border-bottom: 0; }
-      .reach-row .who { font-weight: 700; white-space: nowrap; }
-      .reach-row .what { margin-left: auto; text-align: right; }
-      .reach-row .what b { font-family: "IBM Plex Mono", monospace; font-size: 1.02rem; }
-      .reach-row .waste { color: var(--ink-2); font-size: .82rem; }
-      .reach-row .waste b { color: var(--accent-strong); font-size: .9rem; }
 
       .formula {
         margin-top: 26px;
@@ -519,54 +474,6 @@
         font-size: .9rem;
       }
       .rate-line b { font-family: "IBM Plex Mono", monospace; color: var(--accent-strong); }
-      .walk-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-      .walk-card {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        box-shadow: var(--shadow);
-        padding: 20px;
-      }
-      .walk-card.danger { border-color: #b23a1e; }
-      @media (prefers-color-scheme: dark) { .walk-card.danger { border-color: #ff9a7a; } }
-      .walk-when { font-weight: 900; font-size: 1.02rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-      .walk-tag {
-        font-size: .72rem; font-weight: 700;
-        background: var(--hit-bg); color: var(--hit-ink);
-        border-radius: 999px; padding: 2px 9px; white-space: nowrap;
-      }
-      .walk-desc { margin: 4px 0 0; color: var(--ink-2); font-size: .85rem; }
-      .walk-min { display: flex; align-items: baseline; gap: 8px; margin: 10px 0 6px; }
-      .walk-min .big { font-family: "IBM Plex Mono", monospace; font-size: 3rem; font-weight: 700; line-height: 1; color: var(--accent-strong); }
-      .walk-min .walk-unit { font-weight: 900; font-size: 1.05rem; }
-      .walk-rows { margin: 0; border-top: 1px solid var(--line); }
-      .walk-rows > div {
-        display: flex; align-items: baseline; gap: 8px;
-        padding: 8px 0; border-bottom: 1px solid var(--line); font-size: .92rem;
-      }
-      .walk-rows dt { font-weight: 700; }
-      .walk-rows dd { margin: 0 0 0 auto; font-family: "IBM Plex Mono", monospace; font-weight: 700; font-size: 1.02rem; white-space: nowrap; }
-      .walk-warn {
-        margin: 12px 0 0; border-radius: 8px; padding: 10px 12px;
-        font-size: .88rem; font-weight: 700; line-height: 1.55;
-        background: var(--surface-2); color: var(--ink);
-      }
-      .walk-warn.hot { background: #fbe9e2; color: #8c2b12; }
-      @media (prefers-color-scheme: dark) { .walk-warn.hot { background: #4a2317; color: #ffb59d; } }
-      .walk-warn.safe { background: var(--hit-bg); color: var(--hit-ink); }
-      .cycle {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        box-shadow: var(--shadow);
-        padding: 6px 20px;
-      }
-      .cycle-row { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: .92rem; }
-      .cycle-row:last-child { border-bottom: 0; }
-      .cycle-row .c-k { font-weight: 900; display: block; margin-bottom: 2px; }
-      .cycle-row .c-v { color: var(--ink-2); }
-      .cycle-row .c-v b { color: var(--ink); font-family: "IBM Plex Mono", monospace; }
-
       @media (max-width: 480px) {
         main { padding: 24px 12px 48px; }
         .panel { padding: 16px 14px; }
@@ -574,13 +481,6 @@
         .detail-toggle .summary-total { margin-left: auto; font-size: 1.1rem; }
         .detail-toggle .chev { margin-left: 4px; }
         .use-row { padding: 12px; }
-        .reach { padding: 6px 14px; }
-        .cycle { padding: 6px 14px; }
-        .walk-card { padding: 16px 14px; }
-        .walk-min .big { font-size: 2.5rem; }
-        .reach-row { display: block; padding: 12px 0; }
-        .reach-row .who { display: block; margin-bottom: 2px; }
-        .reach-row .what { display: block; margin-left: 0; text-align: left; }
         .stat .v { font-size: 1.15rem; }
         th, td { padding: 11px 3px; }
         tbody td { font-size: .95rem; }
@@ -700,7 +600,7 @@
       </section>
 
       <div class="tabs" role="tablist" aria-label="ツールの切り替え">
-        <button type="button" class="tab-btn" role="tab" id="tab-daily" aria-selected="true" aria-controls="panel-daily">通常<small>毎日の100%消化</small></button>
+        <button type="button" class="tab-btn" role="tab" id="tab-daily" aria-selected="true" aria-controls="panel-daily">通常<small>分数ごとの歩く時間</small></button>
         <button type="button" class="tab-btn" role="tab" id="tab-event" aria-selected="false" aria-controls="panel-event">イベント<small>期間中だけ使う早見表</small></button>
       </div>
 
@@ -715,43 +615,19 @@
           <div class="rate-line">消化速度（エンデュランス ÷ 6）：1分で <b id="daily-rate">—</b> エナジー</div>
         </section>
 
-        <div class="walk-grid">
-          <article class="walk-card" id="card-noon">
-            <div class="walk-when">朝・昼の回<span class="walk-tag">1/3までで止める</span></div>
-            <p class="walk-desc">1/3を超えて消化すると、次の回復でも100%に戻らず、夜の100%消化ができなくなります。超えない範囲で一番長い分数です。</p>
-            <div class="walk-min"><span class="big num" id="noon-min">—</span><span class="walk-unit">分 歩く</span></div>
-            <dl class="walk-rows">
-              <div><dt>1/3の量</dt><dd class="num" id="noon-target">—</dd></div>
-              <div><dt>この分数での消化</dt><dd class="num" id="noon-used">—</dd></div>
-              <div><dt>1/3までの残り</dt><dd class="num" id="noon-left">—</dd></div>
-            </dl>
-            <p class="walk-warn" id="noon-warn">最大エナジーを入れると、あと1分の扱いがここに出ます。</p>
-          </article>
-
-          <article class="walk-card" id="card-night">
-            <div class="walk-when">夜の回（18時〜21時）<span class="walk-tag">100%消化</span></div>
-            <p class="walk-desc">最大エナジーを全部消化しきるのに必要な分数です。1分刻みなので、消化しきれる一番短い分数に切り上げています。</p>
-            <div class="walk-min"><span class="big num" id="night-min">—</span><span class="walk-unit">分 歩く</span></div>
-            <dl class="walk-rows">
-              <div><dt>消化する量（100%）</dt><dd class="num" id="night-target">—</dd></div>
-              <div><dt>この分数での消化</dt><dd class="num" id="night-used">—</dd></div>
-              <div><dt>100%を超える分</dt><dd class="num" id="night-over">—</dd></div>
-            </dl>
-            <p class="walk-warn safe" id="night-note">100%使い切ると、そこから24時間は回復が4回（3時・9時・15時・21時、6時間ごと）になります。</p>
-          </article>
-        </div>
-
-        <h2>回復の循環</h2>
-        <div class="cycle">
-          <div class="cycle-row"><span class="c-k">通常の回復</span><span class="c-v"><b>1時・9時・17時</b> の3回、1回で最大値の1/3ずつ（8時間ごと）。</span></div>
-          <div class="cycle-row"><span class="c-k">100%消費したあと</span><span class="c-v">そこから24時間は <b>3時・9時・15時・21時</b> の4回、1回で1/3ずつ（6時間ごと）。この循環を切らさないために、昼は1/3を超えず、夜に100%消化します。</span></div>
-        </div>
-
-        <div class="formula">
-          <div class="box">消化速度 ＝ エンデュランス ÷ 6（エナジー／分）</div>
-          <p>・朝・昼の分数 ＝（最大エナジー ÷ 3）÷ 消化速度 を切り捨てた整数分。1/3を絶対に超えません。</p>
-          <p>・夜の分数 ＝ 最大エナジー ÷ 消化速度 を切り上げた整数分。100%に届く一番短い分数です。</p>
-          <p>・エナジー消費は1分ごとの刻みなので、分数はどちらも整数分で見ます。表示は小数第2位まで（第3位以下は切り捨て）。</p>
+        <div class="table-wrap">
+          <table aria-label="分数ごとの歩く時間">
+            <thead>
+              <tr>
+                <th scope="col">分数</th>
+                <th scope="col">歩く時間</th>
+                <th scope="col">エナジー</th>
+                <th scope="col">消化</th>
+                <th scope="col">残り</th>
+              </tr>
+            </thead>
+            <tbody id="frac-body"></tbody>
+          </table>
         </div>
       </div>
 
@@ -785,9 +661,6 @@
         <span><span class="swatch ring"></span>太枠 = そのハイブ数で3に届く最短の分数</span>
       </div>
 
-      <h2>3エナジーに届く最短パターン</h2>
-      <div class="reach" id="reach"></div>
-
       <div class="formula">
         <div class="box">消費エナジー ＝ エンデュランス ÷ 6 × ハイブ数 × 分数</div>
         <p>・1ハイブが1エナジーを消化する時間は「6 ÷ エンデュランス」分です。</p>
@@ -804,23 +677,12 @@
         var input = document.getElementById('endurance');
         var inputWrap = document.getElementById('endurance-wrap');
         var tbody = document.getElementById('tbody');
-        var reachEl = document.getElementById('reach');
         var perMinEl = document.getElementById('stat-per-min');
         var perOneEl = document.getElementById('stat-per-one');
 
         var maxEnergyInput = document.getElementById('max-energy');
         var dailyRateEl = document.getElementById('daily-rate');
-        var noonCard = document.getElementById('card-noon');
-        var noonMinEl = document.getElementById('noon-min');
-        var noonTargetEl = document.getElementById('noon-target');
-        var noonUsedEl = document.getElementById('noon-used');
-        var noonLeftEl = document.getElementById('noon-left');
-        var noonWarnEl = document.getElementById('noon-warn');
-        var nightMinEl = document.getElementById('night-min');
-        var nightTargetEl = document.getElementById('night-target');
-        var nightUsedEl = document.getElementById('night-used');
-        var nightOverEl = document.getElementById('night-over');
-        var nightNoteEl = document.getElementById('night-note');
+        var fracBody = document.getElementById('frac-body');
 
         // タブ切り替え（通常が本体、イベントは別タブ）
         var tabDaily = document.getElementById('tab-daily');
@@ -870,6 +732,8 @@
         var detailToggle = document.getElementById('detail-toggle');
         var detailBody = document.getElementById('detail-body');
         detailBox.removeChild(detailBody);
+        // アプリ版の注入スクリプトが、閉じている間も保存値を流し込めるよう参照を持たせる
+        detailBox.__tlbBody = detailBody;
         detailToggle.addEventListener('click', function () {
           if (detailBody.parentNode === detailBox) {
             detailBox.removeChild(detailBody);
@@ -1016,57 +880,39 @@
           return v;
         }
 
-        // 通常タブ：消化速度はエンデュランス÷6のみ（ハイブ数は数えない）
+        // 通常タブ：分数ごと（1/3・2/3・3/3・4/3）の歩く分数。
+        // 1/3・2/3は目標を超えない最大の整数分、3/3・4/3は目標に届く最小の整数分（端数まで使い切る）。
+        var FRACS = [
+          { label: '1/3', num: 1, ceil: false },
+          { label: '2/3', num: 2, ceil: false },
+          { label: '3/3', num: 3, ceil: true },
+          { label: '4/3', num: 4, ceil: true }
+        ];
         function renderDaily(e) {
           var max = parseFloat(maxEnergyInput.value);
-          if (e === null || isNaN(max) || max <= 0) {
-            dailyRateEl.textContent = e === null ? '—' : fmt(e / 6);
-            noonCard.className = 'walk-card';
-            noonMinEl.textContent = '—';
-            noonTargetEl.textContent = '—';
-            noonUsedEl.textContent = '—';
-            noonLeftEl.textContent = '—';
-            noonWarnEl.className = 'walk-warn';
-            noonWarnEl.textContent = e === null
-              ? 'エンデュランスを入れると、歩く分数が出ます。'
-              : '最大エナジーを入れると、あと1分の扱いがここに出ます。';
-            nightMinEl.textContent = '—';
-            nightTargetEl.textContent = '—';
-            nightUsedEl.textContent = '—';
-            nightOverEl.textContent = '—';
-            return;
+          var valid = e !== null && !isNaN(max) && max > 0;
+          dailyRateEl.textContent = e === null ? '—' : fmt(e / 6);
+          var html = '';
+          for (var i = 0; i < FRACS.length; i++) {
+            var f = FRACS[i];
+            if (!valid) {
+              html += '<tr data-min=""><th scope="row">' + f.label + '</th>' +
+                '<td class="empty">—</td><td class="empty">—</td><td class="empty">—</td><td class="empty">—</td></tr>';
+              continue;
+            }
+            var rate = e / 6;
+            var target = max * f.num / 3;
+            var minutes = f.ceil
+              ? Math.ceil(target / rate - 1e-9)
+              : Math.floor(target / rate + 1e-9);
+            var used = rate * minutes;
+            var left = target - used;
+            if (left < 0) left = 0;
+            html += '<tr data-min="' + minutes + '"><th scope="row">' + f.label + '</th>' +
+              '<td>' + minutes + '分</td><td>' + fmt(target) + '</td><td>' +
+              fmt(used) + '</td><td>' + fmt(left) + '</td></tr>';
           }
-          var rate = e / 6;
-          dailyRateEl.textContent = fmt(rate);
-
-          // 朝・昼：1/3を超えない最大の整数分（切り捨て）
-          var target = max / 3;
-          var noonMin = Math.floor(target / rate + 1e-9);
-          var noonUsed = rate * noonMin;
-          var noonLeft = target - noonUsed;
-          var nextUsed = rate * (noonMin + 1);
-          var nextOver = nextUsed - target;
-          noonMinEl.textContent = noonMin;
-          noonTargetEl.textContent = fmt(target);
-          noonUsedEl.textContent = fmt(noonUsed);
-          noonLeftEl.textContent = fmt(noonLeft);
-          if (noonMin <= 0) {
-            noonCard.className = 'walk-card danger';
-            noonWarnEl.className = 'walk-warn hot';
-            noonWarnEl.textContent = '注意：1分歩くだけで1/3を超えます（1分で ' + fmt(nextUsed) + ' 消化、1/3を ' + fmt(nextOver) + ' 超過）。この回は歩かないのが安全です。';
-          } else {
-            noonCard.className = 'walk-card';
-            noonWarnEl.className = 'walk-warn hot';
-            noonWarnEl.textContent = 'あと1分歩くとアウト：' + (noonMin + 1) + '分で ' + fmt(nextUsed) + ' 消化し、1/3を ' + fmt(nextOver) + ' 超えてしまいます。';
-          }
-
-          // 夜：100%に届く最短の整数分（切り上げ）
-          var nightMin = Math.ceil(max / rate - 1e-9);
-          var nightUsed = rate * nightMin;
-          nightMinEl.textContent = nightMin;
-          nightTargetEl.textContent = fmt(max);
-          nightUsedEl.textContent = fmt(nightUsed);
-          nightOverEl.textContent = fmt(nightUsed - max);
+          fracBody.innerHTML = html;
         }
 
         function render() {
@@ -1093,7 +939,6 @@
               rowsHtml += '</tr>';
             }
             tbody.innerHTML = rowsHtml;
-            reachEl.innerHTML = '<div class="reach-row"><span class="who">エンデュランスを入力してください</span></div>';
             return;
           }
 
@@ -1130,20 +975,6 @@
           }
           tbody.innerHTML = html;
 
-          // 3エナジーに届く最短パターン（表の範囲外の分数も含めて計算）
-          var rHtml = '';
-          for (h = 1; h <= 4; h++) {
-            var rate = perMin * h;
-            var need = Math.ceil(3 / rate - 1e-9);
-            var used = rate * need;
-            var waste = used - 3;
-            rHtml += '<div class="reach-row">' +
-              '<span class="who">ハイブ' + h + '個</span>' +
-              '<span class="what"><b>' + need + '分</b> で <b>' + fmt(used) + '</b> 消費' +
-              ' <span class="waste">（ムダ <b>' + fmt(waste) + '</b>）</span></span>' +
-              '</div>';
-          }
-          reachEl.innerHTML = rHtml;
         }
 
         input.addEventListener('input', render);
