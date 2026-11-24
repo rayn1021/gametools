@@ -855,10 +855,11 @@
           return t.toFixed(2);
         }
         function trunc2(v) { return Math.floor(v * 100 + 1e-9) / 100; }
+        function round2(v) { return Math.round(v * 100) / 100; }
         function signed(v) { return (v > 0 ? '+' : (v < 0 ? '−' : '')) + fmt(Math.abs(v)); }
 
         // 内訳から実効エンデュランスを出す
-        // クリーナーは基礎に対する割合（1匹-15%）を切り捨ててから引く。例: 基礎2.05・2匹 → -0.61
+        // クリーナーは基礎に対する割合（1匹-15%）を小数第2位で四捨五入してから引く（ゲーム実測: 基礎2.05で1匹 -0.31、2匹 -0.61）
         function computeDetail() {
           var main = parseFloat(dMain.value);
           if (isNaN(main) || main < 0) return null;
@@ -869,7 +870,7 @@
           if (isNaN(capBase) || capBase < 0) capBase = 0;
           var epicBonus = dEpic.checked ? 0.5 : 0;
 
-          var cleanerCut = trunc2(main * 0.15 * cleanerN);
+          var cleanerCut = round2(main * 0.15 * cleanerN);
           var ventBonus = trunc2(ventN * 0.05);
           var raw = main - cleanerCut + ventBonus + epicBonus;
           var cap = capBase + epicBonus;
