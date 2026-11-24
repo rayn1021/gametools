@@ -233,6 +233,22 @@
       .cap-preview .cp-formula { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 700; }
       .cap-preview .cp-final { font-weight: 900; color: var(--accent-strong); }
       .d-field input[type="number"]:focus, .d-field select:focus { border-color: var(--accent); }
+      .support-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+      .support-name { font-weight: 700; font-size: .9rem; white-space: nowrap; min-width: 4.6em; }
+      .seg { display: flex; flex: 1; gap: 6px; }
+      .seg-btn {
+        flex: 1;
+        background: var(--input-bg);
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: .92rem;
+        font-weight: 700;
+        padding: 9px 4px;
+        cursor: pointer;
+        min-height: 2.75rem;
+      }
+      .seg-btn.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
       .d-field.check-field {
         grid-column: 1 / -1;
         display: flex;
@@ -614,12 +630,25 @@
                 <input id="d-main" class="num" type="number" inputmode="decimal" step="0.01" min="0" placeholder="1.60" value="1.60" autocomplete="off" />
               </div>
               <div class="d-field">
-                <label for="d-cleaner">クリーナー<span class="note">サポート蜂・最大2匹</span></label>
-                <select id="d-cleaner">
-                  <option value="0" selected>0匹</option>
-                  <option value="1">1匹（−15%）</option>
-                  <option value="2">2匹（−30%）</option>
-                </select>
+                <label>サポート蜂<span class="note">2枠まで・各枠で種類を選びます</span></label>
+                <div class="support-row">
+                  <span class="support-name">サポート1</span>
+                  <div class="seg" id="d-support1-seg">
+                    <button type="button" class="seg-btn is-on" data-v="none">無し</button>
+                    <button type="button" class="seg-btn" data-v="cleaner">クリーナー</button>
+                    <button type="button" class="seg-btn" data-v="nurse">ナース</button>
+                  </div>
+                  <input type="hidden" id="d-support1" value="none" />
+                </div>
+                <div class="support-row">
+                  <span class="support-name">サポート2</span>
+                  <div class="seg" id="d-support2-seg">
+                    <button type="button" class="seg-btn is-on" data-v="none">無し</button>
+                    <button type="button" class="seg-btn" data-v="cleaner">クリーナー</button>
+                    <button type="button" class="seg-btn" data-v="nurse">ナース</button>
+                  </div>
+                  <input type="hidden" id="d-support2" value="none" />
+                </div>
               </div>
               <div class="d-field">
                 <label for="d-vent">ベンチレーター<span class="note">匹数を手入力</span></label>
@@ -639,7 +668,7 @@
             <div class="breakdown" aria-label="エンデュランスの内訳">
               <div class="bd-section">本体の計算</div>
               <div class="bd-row"><span class="bd-k">メインビー基礎</span><span class="bd-v num" id="bd-main">1.60</span></div>
-              <div class="bd-row"><span class="bd-k">クリーナー</span><span class="bd-sub" id="bd-cleaner-sub">なし</span><span class="bd-v num neg" id="bd-cleaner">0.00</span></div>
+              <div class="bd-row"><span class="bd-k">サポート蜂</span><span class="bd-sub" id="bd-cleaner-sub">なし</span><span class="bd-v num" id="bd-cleaner">0.00</span></div>
               <div class="bd-row"><span class="bd-k">ベンチレーター</span><span class="bd-sub" id="bd-vent-sub">20 × 0.05</span><span class="bd-v num" id="bd-vent">+1.00</span></div>
               <div class="bd-row"><span class="bd-k">エピック</span><span class="bd-v num" id="bd-epic">0.00</span></div>
               <div class="bd-row subtotal"><span class="bd-k">小計</span><span class="bd-sub">上限をかける前の合計</span><span class="bd-v num" id="bd-raw">2.60</span></div>
@@ -653,7 +682,7 @@
 
               <div class="bd-row total" id="bd-total-row"><span class="bd-k">実効エンデュランス</span><span class="bd-sub" id="bd-cap-note">小計と上限の小さい方</span><span class="bd-v num" id="bd-total">2.60</span></div>
             </div>
-            <p class="detail-note">クリーナーはメインビー基礎に対する割合で引かれます（1匹 −15%）。ベンチレーターは1匹 +0.05 です。<br />上限は2段で見ます：エピック抜きの上限に、エピック分 +0.50 を足したものが「実際に効く上限」です。小計がそれを超えたら、実効は上限で止まります。</p>
+            <p class="detail-note">サポート蜂はメインビー基礎に対する割合で効きます（クリーナー1枠 −15%、ナース1枠 +15%。2枠分を合算してから基礎にかけます）。ベンチレーターは1匹 +0.05 です。<br />上限は2段で見ます：エピック抜きの上限に、エピック分 +0.50 を足したものが「実際に効く上限」です。小計がそれを超えたら、実効は上限で止まります。</p>
           </div>
         </div>
 
@@ -763,7 +792,7 @@
         <p>・1ハイブが1エナジーを消化する時間は「6 ÷ エンデュランス」分です。</p>
         <p>・表示は小数第2位まで（第3位以下は切り捨て）。例：エンデュランス4なら1分で0.66。</p>
         <p>・エナジー消費は1分ごとの刻みなので、分数は整数分で見ます。</p>
-        <p>・詳細入力の小計 ＝ メインビー基礎 − クリーナー（基礎の15%×匹数）＋ ベンチレーター（匹数×0.05）＋ エピック0.50。</p>
+        <p>・詳細入力の小計 ＝ メインビー基礎 ＋ サポート蜂（基礎の±15%×枠数、クリーナーは−・ナースは+）＋ ベンチレーター（匹数×0.05）＋ エピック0.50。</p>
         <p>・上限（エピック込み）＝ 上限（エピック抜き）＋ エピック0.50。実効エンデュランスは、小計と上限（エピック込み）の小さい方です。</p>
       </div>
       </div>
@@ -809,7 +838,8 @@
 
         var useDetail = document.getElementById('use-detail');
         var dMain = document.getElementById('d-main');
-        var dCleaner = document.getElementById('d-cleaner');
+        var dSupport1 = document.getElementById('d-support1');
+        var dSupport2 = document.getElementById('d-support2');
         var dVent = document.getElementById('d-vent');
         var dCap = document.getElementById('d-cap');
         var dEpic = document.getElementById('d-epic');
@@ -858,25 +888,54 @@
         function round2(v) { return Math.round(v * 100) / 100; }
         function signed(v) { return (v > 0 ? '+' : (v < 0 ? '−' : '')) + fmt(Math.abs(v)); }
 
+        // サポート蜂の枠（サポート1/2）のボタン選択
+        function paintSeg(input) {
+          var box = document.getElementById(input.id + '-seg');
+          if (!box) return;
+          var btns = box.querySelectorAll('button[data-v]');
+          for (var i = 0; i < btns.length; i++) {
+            btns[i].classList.toggle('is-on',
+              btns[i].getAttribute('data-v') === input.value);
+          }
+        }
+        function setupSeg(input) {
+          var box = document.getElementById(input.id + '-seg');
+          if (!box) return;
+          box.addEventListener('click', function (e) {
+            var btn = e.target.closest('button[data-v]');
+            if (!btn) return;
+            input.value = btn.getAttribute('data-v');
+            paintSeg(input);
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+          paintSeg(input);
+        }
+        setupSeg(dSupport1);
+        setupSeg(dSupport2);
+
         // 内訳から実効エンデュランスを出す
-        // クリーナーは基礎に対する割合（1匹-15%）を小数第2位で四捨五入してから引く（ゲーム実測: 基礎2.05で1匹 -0.31、2匹 -0.61）
+        // サポート蜂は2枠分を合算した割合（クリーナー-15%・ナース+15%）を基礎にかけ、小数第2位で四捨五入する
+        // （ゲーム実測: 基礎2.05でクリーナー1枠 -0.31、2枠 -0.61、ナースは逆符号）
         function computeDetail() {
           var main = parseFloat(dMain.value);
           if (isNaN(main) || main < 0) return null;
-          var cleanerN = parseInt(dCleaner.value, 10) || 0;
+          var cleanerN = (dSupport1.value === 'cleaner' ? 1 : 0)
+                       + (dSupport2.value === 'cleaner' ? 1 : 0);
+          var nurseN = (dSupport1.value === 'nurse' ? 1 : 0)
+                     + (dSupport2.value === 'nurse' ? 1 : 0);
           var ventN = parseFloat(dVent.value);
           if (isNaN(ventN) || ventN < 0) ventN = 0;
           var capBase = parseFloat(dCap.value);
           if (isNaN(capBase) || capBase < 0) capBase = 0;
           var epicBonus = dEpic.checked ? 0.5 : 0;
 
-          var cleanerCut = round2(main * 0.15 * cleanerN);
+          var supportNet = round2(main * 0.15 * (nurseN - cleanerN));
           var ventBonus = trunc2(ventN * 0.05);
-          var raw = main - cleanerCut + ventBonus + epicBonus;
+          var raw = main + supportNet + ventBonus + epicBonus;
           var cap = capBase + epicBonus;
           var total = trunc2(Math.min(raw, cap));
           return {
-            main: main, cleanerN: cleanerN, cleanerCut: cleanerCut,
+            main: main, cleanerN: cleanerN, nurseN: nurseN, supportNet: supportNet,
             ventN: ventN, ventBonus: ventBonus, epicBonus: epicBonus,
             capBase: capBase,
             raw: raw, cap: cap, capped: raw > cap + 1e-9, total: total
@@ -884,6 +943,8 @@
         }
 
         function renderDetail() {
+          paintSeg(dSupport1);
+          paintSeg(dSupport2);
           var d = computeDetail();
           if (d === null) {
             summaryTotal.textContent = '—';
@@ -907,8 +968,12 @@
           summaryTotal.textContent = fmt(d.total);
           summaryCap.className = 'summary-cap' + (d.capped ? ' show' : '');
           bdMain.textContent = fmt(d.main);
-          bdCleanerSub.textContent = d.cleanerN > 0 ? ('基礎の −15% × ' + d.cleanerN + '匹') : 'なし';
-          bdCleaner.textContent = d.cleanerCut > 0 ? ('−' + fmt(d.cleanerCut)) : '0.00';
+          var subParts = [];
+          if (d.cleanerN > 0) subParts.push('クリーナー −15%' + (d.cleanerN > 1 ? ' ×2枠' : ''));
+          if (d.nurseN > 0) subParts.push('ナース +15%' + (d.nurseN > 1 ? ' ×2枠' : ''));
+          bdCleanerSub.textContent = subParts.length ? subParts.join('、') : 'なし';
+          bdCleaner.textContent = signed(d.supportNet);
+          bdCleaner.className = 'bd-v num' + (d.supportNet < 0 ? ' neg' : '');
           bdVentSub.textContent = d.ventN + ' × 0.05';
           bdVent.textContent = signed(d.ventBonus);
           bdEpic.textContent = d.epicBonus > 0 ? '+0.50' : '0.00';
@@ -1079,7 +1144,7 @@
         maxEnergyInput.addEventListener('input', render);
         maxEnergyInput.addEventListener('change', render);
         useDetail.addEventListener('change', render);
-        [dMain, dCleaner, dVent, dCap, dEpic].forEach(function (el) {
+        [dMain, dSupport1, dSupport2, dVent, dCap, dEpic].forEach(function (el) {
           el.addEventListener('input', render);
           el.addEventListener('change', render);
         });
