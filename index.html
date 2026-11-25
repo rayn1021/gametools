@@ -60,6 +60,12 @@
         font-size: .92rem;
       }
       .lede .game { font-weight: 700; color: var(--ink); }
+      .apk-dl {
+        margin: -16px 0 24px;
+        color: var(--ink-2);
+        font-size: .85rem;
+      }
+      .apk-dl a { color: var(--accent-strong); font-weight: 700; }
 
       /* ---------- input ---------- */
       .panel {
@@ -577,6 +583,7 @@
     <main>
       <h1>エナジー消費計算</h1>
       <p class="lede"><span class="game">The Life Bomb</span> 用。ふだんの100%消化に必要な「歩く分数」を出すのが本体で、イベント用の早見表は別タブに分けてあります。エンデュランス入力は両タブ共通です。</p>
+      <p class="apk-dl" id="apk-dl">Androidアプリ版（浮くタイマー付き）もあります: <a href="tlb-timer.apk" download>TLBタイマーをダウンロード</a>（v3.2・約200KB・Android専用）</p>
 
       <section class="panel" aria-label="ランド選択">
         <span class="field-label">ランド</span>
@@ -1105,6 +1112,12 @@
         });
 
         render();
+
+        // アプリ内（WebView）で開いた時は、ダウンロード案内を出さない
+        if (window.TLBBridge) {
+          var apkDl = document.getElementById('apk-dl');
+          if (apkDl) apkDl.style.display = 'none';
+        }
 
         // ---------- ランド（設定一式の登録・切替） ----------
         // ランドごとに、エンデュランス（直接入力と内訳一式）・最大エナジー・
